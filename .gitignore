@@ -1,0 +1,22 @@
+# https://dart.dev/guides/libraries/private-files
+# Created by `dart pub`
+.dart_tool/
+.packages
+
+# API key file for local development
+api_key.txt
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Mac OS files
+.DS_Store
+
+# Editor-specific files
+.idea/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json

@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  vorkybot:
+    image: yourusername/vorkybot:latest
+    container_name: vorkybot
+    environment:
+      - API_KEY=${API_KEY}
+      - COOLDOWN_DURATION_SEC=${COOLDOWN_DURATION_SEC}
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+      # Uncomment and adjust path below to mount external predictions file
+      - /path/to/your/predictions.txt:/app/data/predictions.txt:ro

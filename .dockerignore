@@ -1,0 +1,10 @@
+.dart_tool/
+.git/
+.github/
+.gitignore
+.packages
+.vscode/
+build/
+.DS_Store
+api_key.txt
+*.log
