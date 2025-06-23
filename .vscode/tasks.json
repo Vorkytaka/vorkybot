@@ -6,7 +6,7 @@
 			"type": "shell",
 			"command": "dart",
 			"args": [
-				"bin/vorkybot.dart"
+				"bin/main.dart"
 			],
 			"group": "build",
 			"problemMatcher": []

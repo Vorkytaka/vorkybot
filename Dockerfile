@@ -11,13 +11,13 @@ RUN dart pub get
 COPY . .
 
 # Build the application
-RUN dart compile exe bin/vorkybot.dart -o bin/vorkybot
+RUN dart compile exe bin/main.dart -o bin/vorkybot
 
 # Create a smaller runtime image
 FROM debian:stable-slim
 
 # Install required libraries
-RUN apt-get update && apt-get install -y libglib2.0-0 ca-certificates && apt-get clean
+RUN apt-get update && apt-get install -y libglib2.0-0 ca-certificates libsqlite3-dev && apt-get clean
 
 WORKDIR /app
 

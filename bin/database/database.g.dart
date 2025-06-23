@@ -32,15 +32,8 @@ class $PUsersTable extends PUsers with TableInfo<$PUsersTable, PUser> {
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       $customConstraints: 'NOT NULL');
-  static const VerificationMeta _callMeMeta = const VerificationMeta('callMe');
   @override
-  late final GeneratedColumn<String> callMe = GeneratedColumn<String>(
-      'call_me', aliasedName, true,
-      type: DriftSqlType.string,
-      requiredDuringInsert: false,
-      $customConstraints: 'UNIQUE');
-  @override
-  List<GeneratedColumn> get $columns => [id, username, name, callMe];
+  List<GeneratedColumn> get $columns => [id, username, name];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -64,10 +57,6 @@ class $PUsersTable extends PUsers with TableInfo<$PUsersTable, PUser> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
-    if (data.containsKey('call_me')) {
-      context.handle(_callMeMeta,
-          callMe.isAcceptableOrUnknown(data['call_me']!, _callMeMeta));
-    }
     return context;
   }
 
@@ -83,8 +72,6 @@ class $PUsersTable extends PUsers with TableInfo<$PUsersTable, PUser> {
           .read(DriftSqlType.string, data['${effectivePrefix}username']),
       name: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
-      callMe: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}call_me']),
     );
   }
 
@@ -98,9 +85,7 @@ class PUser extends DataClass implements Insertable<PUser> {
   final int id;
   final String? username;
   final String name;
-  final String? callMe;
-  const PUser(
-      {required this.id, this.username, required this.name, this.callMe});
+  const PUser({required this.id, this.username, required this.name});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -109,9 +94,6 @@ class PUser extends DataClass implements Insertable<PUser> {
       map['username'] = Variable<String>(username);
     }
     map['name'] = Variable<String>(name);
-    if (!nullToAbsent || callMe != null) {
-      map['call_me'] = Variable<String>(callMe);
-    }
     return map;
   }
 
@@ -122,8 +104,6 @@ class PUser extends DataClass implements Insertable<PUser> {
           ? const Value.absent()
           : Value(username),
       name: Value(name),
-      callMe:
-          callMe == null && nullToAbsent ? const Value.absent() : Value(callMe),
     );
   }
 
@@ -134,7 +114,6 @@ class PUser extends DataClass implements Insertable<PUser> {
       id: serializer.fromJson<int>(json['id']),
       username: serializer.fromJson<String?>(json['username']),
       name: serializer.fromJson<String>(json['name']),
-      callMe: serializer.fromJson<String?>(json['callMe']),
     );
   }
   @override
@@ -144,27 +123,23 @@ class PUser extends DataClass implements Insertable<PUser> {
       'id': serializer.toJson<int>(id),
       'username': serializer.toJson<String?>(username),
       'name': serializer.toJson<String>(name),
-      'callMe': serializer.toJson<String?>(callMe),
     };
   }
 
   PUser copyWith(
           {int? id,
           Value<String?> username = const Value.absent(),
-          String? name,
-          Value<String?> callMe = const Value.absent()}) =>
+          String? name}) =>
       PUser(
         id: id ?? this.id,
         username: username.present ? username.value : this.username,
         name: name ?? this.name,
-        callMe: callMe.present ? callMe.value : this.callMe,
       );
   PUser copyWithCompanion(PUsersCompanion data) {
     return PUser(
       id: data.id.present ? data.id.value : this.id,
       username: data.username.present ? data.username.value : this.username,
       name: data.name.present ? data.name.value : this.name,
-      callMe: data.callMe.present ? data.callMe.value : this.callMe,
     );
   }
 
@@ -173,65 +148,54 @@ class PUser extends DataClass implements Insertable<PUser> {
     return (StringBuffer('PUser(')
           ..write('id: $id, ')
           ..write('username: $username, ')
-          ..write('name: $name, ')
-          ..write('callMe: $callMe')
+          ..write('name: $name')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, username, name, callMe);
+  int get hashCode => Object.hash(id, username, name);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PUser &&
           other.id == this.id &&
           other.username == this.username &&
-          other.name == this.name &&
-          other.callMe == this.callMe);
+          other.name == this.name);
 }
 
 class PUsersCompanion extends UpdateCompanion<PUser> {
   final Value<int> id;
   final Value<String?> username;
   final Value<String> name;
-  final Value<String?> callMe;
   const PUsersCompanion({
     this.id = const Value.absent(),
     this.username = const Value.absent(),
     this.name = const Value.absent(),
-    this.callMe = const Value.absent(),
   });
   PUsersCompanion.insert({
     this.id = const Value.absent(),
     this.username = const Value.absent(),
     required String name,
-    this.callMe = const Value.absent(),
   }) : name = Value(name);
   static Insertable<PUser> custom({
     Expression<int>? id,
     Expression<String>? username,
     Expression<String>? name,
-    Expression<String>? callMe,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (username != null) 'username': username,
       if (name != null) 'name': name,
-      if (callMe != null) 'call_me': callMe,
     });
   }
 
   PUsersCompanion copyWith(
-      {Value<int>? id,
-      Value<String?>? username,
-      Value<String>? name,
-      Value<String?>? callMe}) {
+      {Value<int>? id, Value<String?>? username, Value<String>? name}) {
     return PUsersCompanion(
       id: id ?? this.id,
       username: username ?? this.username,
       name: name ?? this.name,
-      callMe: callMe ?? this.callMe,
     );
   }
 
@@ -247,9 +211,6 @@ class PUsersCompanion extends UpdateCompanion<PUser> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
-    if (callMe.present) {
-      map['call_me'] = Variable<String>(callMe.value);
-    }
     return map;
   }
 
@@ -258,8 +219,7 @@ class PUsersCompanion extends UpdateCompanion<PUser> {
     return (StringBuffer('PUsersCompanion(')
           ..write('id: $id, ')
           ..write('username: $username, ')
-          ..write('name: $name, ')
-          ..write('callMe: $callMe')
+          ..write('name: $name')
           ..write(')'))
         .toString();
   }
@@ -291,8 +251,19 @@ class $PChatsTable extends PChats with TableInfo<$PChatsTable, PChat> {
   late final GeneratedColumn<int> lastWinnerId = GeneratedColumn<int>(
       'last_winner_id', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _autoplayMeta =
+      const VerificationMeta('autoplay');
   @override
-  List<GeneratedColumn> get $columns => [id, lastPlayDate, lastWinnerId];
+  late final GeneratedColumn<bool> autoplay = GeneratedColumn<bool>(
+      'autoplay', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("autoplay" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, lastPlayDate, lastWinnerId, autoplay];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -318,6 +289,10 @@ class $PChatsTable extends PChats with TableInfo<$PChatsTable, PChat> {
           lastWinnerId.isAcceptableOrUnknown(
               data['last_winner_id']!, _lastWinnerIdMeta));
     }
+    if (data.containsKey('autoplay')) {
+      context.handle(_autoplayMeta,
+          autoplay.isAcceptableOrUnknown(data['autoplay']!, _autoplayMeta));
+    }
     return context;
   }
 
@@ -333,6 +308,8 @@ class $PChatsTable extends PChats with TableInfo<$PChatsTable, PChat> {
           DriftSqlType.dateTime, data['${effectivePrefix}last_play_date']),
       lastWinnerId: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}last_winner_id']),
+      autoplay: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}autoplay'])!,
     );
   }
 
@@ -346,7 +323,12 @@ class PChat extends DataClass implements Insertable<PChat> {
   final int id;
   final DateTime? lastPlayDate;
   final int? lastWinnerId;
-  const PChat({required this.id, this.lastPlayDate, this.lastWinnerId});
+  final bool autoplay;
+  const PChat(
+      {required this.id,
+      this.lastPlayDate,
+      this.lastWinnerId,
+      required this.autoplay});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -357,6 +339,7 @@ class PChat extends DataClass implements Insertable<PChat> {
     if (!nullToAbsent || lastWinnerId != null) {
       map['last_winner_id'] = Variable<int>(lastWinnerId);
     }
+    map['autoplay'] = Variable<bool>(autoplay);
     return map;
   }
 
@@ -369,6 +352,7 @@ class PChat extends DataClass implements Insertable<PChat> {
       lastWinnerId: lastWinnerId == null && nullToAbsent
           ? const Value.absent()
           : Value(lastWinnerId),
+      autoplay: Value(autoplay),
     );
   }
 
@@ -379,6 +363,7 @@ class PChat extends DataClass implements Insertable<PChat> {
       id: serializer.fromJson<int>(json['id']),
       lastPlayDate: serializer.fromJson<DateTime?>(json['lastPlayDate']),
       lastWinnerId: serializer.fromJson<int?>(json['lastWinnerId']),
+      autoplay: serializer.fromJson<bool>(json['autoplay']),
     );
   }
   @override
@@ -388,19 +373,22 @@ class PChat extends DataClass implements Insertable<PChat> {
       'id': serializer.toJson<int>(id),
       'lastPlayDate': serializer.toJson<DateTime?>(lastPlayDate),
       'lastWinnerId': serializer.toJson<int?>(lastWinnerId),
+      'autoplay': serializer.toJson<bool>(autoplay),
     };
   }
 
   PChat copyWith(
           {int? id,
           Value<DateTime?> lastPlayDate = const Value.absent(),
-          Value<int?> lastWinnerId = const Value.absent()}) =>
+          Value<int?> lastWinnerId = const Value.absent(),
+          bool? autoplay}) =>
       PChat(
         id: id ?? this.id,
         lastPlayDate:
             lastPlayDate.present ? lastPlayDate.value : this.lastPlayDate,
         lastWinnerId:
             lastWinnerId.present ? lastWinnerId.value : this.lastWinnerId,
+        autoplay: autoplay ?? this.autoplay,
       );
   PChat copyWithCompanion(PChatsCompanion data) {
     return PChat(
@@ -411,6 +399,7 @@ class PChat extends DataClass implements Insertable<PChat> {
       lastWinnerId: data.lastWinnerId.present
           ? data.lastWinnerId.value
           : this.lastWinnerId,
+      autoplay: data.autoplay.present ? data.autoplay.value : this.autoplay,
     );
   }
 
@@ -419,56 +408,65 @@ class PChat extends DataClass implements Insertable<PChat> {
     return (StringBuffer('PChat(')
           ..write('id: $id, ')
           ..write('lastPlayDate: $lastPlayDate, ')
-          ..write('lastWinnerId: $lastWinnerId')
+          ..write('lastWinnerId: $lastWinnerId, ')
+          ..write('autoplay: $autoplay')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, lastPlayDate, lastWinnerId);
+  int get hashCode => Object.hash(id, lastPlayDate, lastWinnerId, autoplay);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PChat &&
           other.id == this.id &&
           other.lastPlayDate == this.lastPlayDate &&
-          other.lastWinnerId == this.lastWinnerId);
+          other.lastWinnerId == this.lastWinnerId &&
+          other.autoplay == this.autoplay);
 }
 
 class PChatsCompanion extends UpdateCompanion<PChat> {
   final Value<int> id;
   final Value<DateTime?> lastPlayDate;
   final Value<int?> lastWinnerId;
+  final Value<bool> autoplay;
   const PChatsCompanion({
     this.id = const Value.absent(),
     this.lastPlayDate = const Value.absent(),
     this.lastWinnerId = const Value.absent(),
+    this.autoplay = const Value.absent(),
   });
   PChatsCompanion.insert({
     this.id = const Value.absent(),
     this.lastPlayDate = const Value.absent(),
     this.lastWinnerId = const Value.absent(),
+    this.autoplay = const Value.absent(),
   });
   static Insertable<PChat> custom({
     Expression<int>? id,
     Expression<DateTime>? lastPlayDate,
     Expression<int>? lastWinnerId,
+    Expression<bool>? autoplay,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (lastPlayDate != null) 'last_play_date': lastPlayDate,
       if (lastWinnerId != null) 'last_winner_id': lastWinnerId,
+      if (autoplay != null) 'autoplay': autoplay,
     });
   }
 
   PChatsCompanion copyWith(
       {Value<int>? id,
       Value<DateTime?>? lastPlayDate,
-      Value<int?>? lastWinnerId}) {
+      Value<int?>? lastWinnerId,
+      Value<bool>? autoplay}) {
     return PChatsCompanion(
       id: id ?? this.id,
       lastPlayDate: lastPlayDate ?? this.lastPlayDate,
       lastWinnerId: lastWinnerId ?? this.lastWinnerId,
+      autoplay: autoplay ?? this.autoplay,
     );
   }
 
@@ -484,6 +482,9 @@ class PChatsCompanion extends UpdateCompanion<PChat> {
     if (lastWinnerId.present) {
       map['last_winner_id'] = Variable<int>(lastWinnerId.value);
     }
+    if (autoplay.present) {
+      map['autoplay'] = Variable<bool>(autoplay.value);
+    }
     return map;
   }
 
@@ -492,7 +493,8 @@ class PChatsCompanion extends UpdateCompanion<PChat> {
     return (StringBuffer('PChatsCompanion(')
           ..write('id: $id, ')
           ..write('lastPlayDate: $lastPlayDate, ')
-          ..write('lastWinnerId: $lastWinnerId')
+          ..write('lastWinnerId: $lastWinnerId, ')
+          ..write('autoplay: $autoplay')
           ..write(')'))
         .toString();
   }
@@ -525,8 +527,13 @@ class $PUserChatsTable extends PUserChats
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _callMeMeta = const VerificationMeta('callMe');
   @override
-  List<GeneratedColumn> get $columns => [userId, chatId, wins];
+  late final GeneratedColumn<String> callMe = GeneratedColumn<String>(
+      'call_me', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [userId, chatId, wins, callMe];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -553,11 +560,19 @@ class $PUserChatsTable extends PUserChats
       context.handle(
           _winsMeta, wins.isAcceptableOrUnknown(data['wins']!, _winsMeta));
     }
+    if (data.containsKey('call_me')) {
+      context.handle(_callMeMeta,
+          callMe.isAcceptableOrUnknown(data['call_me']!, _callMeMeta));
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {userId, chatId};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+        {userId, chatId, callMe},
+      ];
   @override
   PUserChat map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -568,6 +583,8 @@ class $PUserChatsTable extends PUserChats
           .read(DriftSqlType.int, data['${effectivePrefix}chat_id'])!,
       wins: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}wins'])!,
+      callMe: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}call_me']),
     );
   }
 
@@ -581,14 +598,21 @@ class PUserChat extends DataClass implements Insertable<PUserChat> {
   final int userId;
   final int chatId;
   final int wins;
+  final String? callMe;
   const PUserChat(
-      {required this.userId, required this.chatId, required this.wins});
+      {required this.userId,
+      required this.chatId,
+      required this.wins,
+      this.callMe});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['user_id'] = Variable<int>(userId);
     map['chat_id'] = Variable<int>(chatId);
     map['wins'] = Variable<int>(wins);
+    if (!nullToAbsent || callMe != null) {
+      map['call_me'] = Variable<String>(callMe);
+    }
     return map;
   }
 
@@ -597,6 +621,8 @@ class PUserChat extends DataClass implements Insertable<PUserChat> {
       userId: Value(userId),
       chatId: Value(chatId),
       wins: Value(wins),
+      callMe:
+          callMe == null && nullToAbsent ? const Value.absent() : Value(callMe),
     );
   }
 
@@ -607,6 +633,7 @@ class PUserChat extends DataClass implements Insertable<PUserChat> {
       userId: serializer.fromJson<int>(json['userId']),
       chatId: serializer.fromJson<int>(json['chatId']),
       wins: serializer.fromJson<int>(json['wins']),
+      callMe: serializer.fromJson<String?>(json['callMe']),
     );
   }
   @override
@@ -616,19 +643,27 @@ class PUserChat extends DataClass implements Insertable<PUserChat> {
       'userId': serializer.toJson<int>(userId),
       'chatId': serializer.toJson<int>(chatId),
       'wins': serializer.toJson<int>(wins),
+      'callMe': serializer.toJson<String?>(callMe),
     };
   }
 
-  PUserChat copyWith({int? userId, int? chatId, int? wins}) => PUserChat(
+  PUserChat copyWith(
+          {int? userId,
+          int? chatId,
+          int? wins,
+          Value<String?> callMe = const Value.absent()}) =>
+      PUserChat(
         userId: userId ?? this.userId,
         chatId: chatId ?? this.chatId,
         wins: wins ?? this.wins,
+        callMe: callMe.present ? callMe.value : this.callMe,
       );
   PUserChat copyWithCompanion(PUserChatsCompanion data) {
     return PUserChat(
       userId: data.userId.present ? data.userId.value : this.userId,
       chatId: data.chatId.present ? data.chatId.value : this.chatId,
       wins: data.wins.present ? data.wins.value : this.wins,
+      callMe: data.callMe.present ? data.callMe.value : this.callMe,
     );
   }
 
@@ -637,37 +672,42 @@ class PUserChat extends DataClass implements Insertable<PUserChat> {
     return (StringBuffer('PUserChat(')
           ..write('userId: $userId, ')
           ..write('chatId: $chatId, ')
-          ..write('wins: $wins')
+          ..write('wins: $wins, ')
+          ..write('callMe: $callMe')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(userId, chatId, wins);
+  int get hashCode => Object.hash(userId, chatId, wins, callMe);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is PUserChat &&
           other.userId == this.userId &&
           other.chatId == this.chatId &&
-          other.wins == this.wins);
+          other.wins == this.wins &&
+          other.callMe == this.callMe);
 }
 
 class PUserChatsCompanion extends UpdateCompanion<PUserChat> {
   final Value<int> userId;
   final Value<int> chatId;
   final Value<int> wins;
+  final Value<String?> callMe;
   final Value<int> rowid;
   const PUserChatsCompanion({
     this.userId = const Value.absent(),
     this.chatId = const Value.absent(),
     this.wins = const Value.absent(),
+    this.callMe = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PUserChatsCompanion.insert({
     required int userId,
     required int chatId,
     this.wins = const Value.absent(),
+    this.callMe = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : userId = Value(userId),
         chatId = Value(chatId);
@@ -675,12 +715,14 @@ class PUserChatsCompanion extends UpdateCompanion<PUserChat> {
     Expression<int>? userId,
     Expression<int>? chatId,
     Expression<int>? wins,
+    Expression<String>? callMe,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (userId != null) 'user_id': userId,
       if (chatId != null) 'chat_id': chatId,
       if (wins != null) 'wins': wins,
+      if (callMe != null) 'call_me': callMe,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -689,11 +731,13 @@ class PUserChatsCompanion extends UpdateCompanion<PUserChat> {
       {Value<int>? userId,
       Value<int>? chatId,
       Value<int>? wins,
+      Value<String?>? callMe,
       Value<int>? rowid}) {
     return PUserChatsCompanion(
       userId: userId ?? this.userId,
       chatId: chatId ?? this.chatId,
       wins: wins ?? this.wins,
+      callMe: callMe ?? this.callMe,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -710,6 +754,9 @@ class PUserChatsCompanion extends UpdateCompanion<PUserChat> {
     if (wins.present) {
       map['wins'] = Variable<int>(wins.value);
     }
+    if (callMe.present) {
+      map['call_me'] = Variable<String>(callMe.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -722,6 +769,7 @@ class PUserChatsCompanion extends UpdateCompanion<PUserChat> {
           ..write('userId: $userId, ')
           ..write('chatId: $chatId, ')
           ..write('wins: $wins, ')
+          ..write('callMe: $callMe, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -746,13 +794,11 @@ typedef $$PUsersTableCreateCompanionBuilder = PUsersCompanion Function({
   Value<int> id,
   Value<String?> username,
   required String name,
-  Value<String?> callMe,
 });
 typedef $$PUsersTableUpdateCompanionBuilder = PUsersCompanion Function({
   Value<int> id,
   Value<String?> username,
   Value<String> name,
-  Value<String?> callMe,
 });
 
 class $$PUsersTableTableManager extends RootTableManager<
@@ -775,25 +821,21 @@ class $$PUsersTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<String?> username = const Value.absent(),
             Value<String> name = const Value.absent(),
-            Value<String?> callMe = const Value.absent(),
           }) =>
               PUsersCompanion(
             id: id,
             username: username,
             name: name,
-            callMe: callMe,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<String?> username = const Value.absent(),
             required String name,
-            Value<String?> callMe = const Value.absent(),
           }) =>
               PUsersCompanion.insert(
             id: id,
             username: username,
             name: name,
-            callMe: callMe,
           ),
         ));
 }
@@ -813,11 +855,6 @@ class $$PUsersTableFilterComposer
 
   ColumnFilters<String> get name => $state.composableBuilder(
       column: $state.table.name,
-      builder: (column, joinBuilders) =>
-          ColumnFilters(column, joinBuilders: joinBuilders));
-
-  ColumnFilters<String> get callMe => $state.composableBuilder(
-      column: $state.table.callMe,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -852,22 +889,19 @@ class $$PUsersTableOrderingComposer
       column: $state.table.name,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
-
-  ColumnOrderings<String> get callMe => $state.composableBuilder(
-      column: $state.table.callMe,
-      builder: (column, joinBuilders) =>
-          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 typedef $$PChatsTableCreateCompanionBuilder = PChatsCompanion Function({
   Value<int> id,
   Value<DateTime?> lastPlayDate,
   Value<int?> lastWinnerId,
+  Value<bool> autoplay,
 });
 typedef $$PChatsTableUpdateCompanionBuilder = PChatsCompanion Function({
   Value<int> id,
   Value<DateTime?> lastPlayDate,
   Value<int?> lastWinnerId,
+  Value<bool> autoplay,
 });
 
 class $$PChatsTableTableManager extends RootTableManager<
@@ -890,21 +924,25 @@ class $$PChatsTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<DateTime?> lastPlayDate = const Value.absent(),
             Value<int?> lastWinnerId = const Value.absent(),
+            Value<bool> autoplay = const Value.absent(),
           }) =>
               PChatsCompanion(
             id: id,
             lastPlayDate: lastPlayDate,
             lastWinnerId: lastWinnerId,
+            autoplay: autoplay,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
             Value<DateTime?> lastPlayDate = const Value.absent(),
             Value<int?> lastWinnerId = const Value.absent(),
+            Value<bool> autoplay = const Value.absent(),
           }) =>
               PChatsCompanion.insert(
             id: id,
             lastPlayDate: lastPlayDate,
             lastWinnerId: lastWinnerId,
+            autoplay: autoplay,
           ),
         ));
 }
@@ -924,6 +962,11 @@ class $$PChatsTableFilterComposer
 
   ColumnFilters<int> get lastWinnerId => $state.composableBuilder(
       column: $state.table.lastWinnerId,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<bool> get autoplay => $state.composableBuilder(
+      column: $state.table.autoplay,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -958,18 +1001,25 @@ class $$PChatsTableOrderingComposer
       column: $state.table.lastWinnerId,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<bool> get autoplay => $state.composableBuilder(
+      column: $state.table.autoplay,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
 }
 
 typedef $$PUserChatsTableCreateCompanionBuilder = PUserChatsCompanion Function({
   required int userId,
   required int chatId,
   Value<int> wins,
+  Value<String?> callMe,
   Value<int> rowid,
 });
 typedef $$PUserChatsTableUpdateCompanionBuilder = PUserChatsCompanion Function({
   Value<int> userId,
   Value<int> chatId,
   Value<int> wins,
+  Value<String?> callMe,
   Value<int> rowid,
 });
 
@@ -993,24 +1043,28 @@ class $$PUserChatsTableTableManager extends RootTableManager<
             Value<int> userId = const Value.absent(),
             Value<int> chatId = const Value.absent(),
             Value<int> wins = const Value.absent(),
+            Value<String?> callMe = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               PUserChatsCompanion(
             userId: userId,
             chatId: chatId,
             wins: wins,
+            callMe: callMe,
             rowid: rowid,
           ),
           createCompanionCallback: ({
             required int userId,
             required int chatId,
             Value<int> wins = const Value.absent(),
+            Value<String?> callMe = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               PUserChatsCompanion.insert(
             userId: userId,
             chatId: chatId,
             wins: wins,
+            callMe: callMe,
             rowid: rowid,
           ),
         ));
@@ -1021,6 +1075,11 @@ class $$PUserChatsTableFilterComposer
   $$PUserChatsTableFilterComposer(super.$state);
   ColumnFilters<int> get wins => $state.composableBuilder(
       column: $state.table.wins,
+      builder: (column, joinBuilders) =>
+          ColumnFilters(column, joinBuilders: joinBuilders));
+
+  ColumnFilters<String> get callMe => $state.composableBuilder(
+      column: $state.table.callMe,
       builder: (column, joinBuilders) =>
           ColumnFilters(column, joinBuilders: joinBuilders));
 
@@ -1054,6 +1113,11 @@ class $$PUserChatsTableOrderingComposer
   $$PUserChatsTableOrderingComposer(super.$state);
   ColumnOrderings<int> get wins => $state.composableBuilder(
       column: $state.table.wins,
+      builder: (column, joinBuilders) =>
+          ColumnOrderings(column, joinBuilders: joinBuilders));
+
+  ColumnOrderings<String> get callMe => $state.composableBuilder(
+      column: $state.table.callMe,
       builder: (column, joinBuilders) =>
           ColumnOrderings(column, joinBuilders: joinBuilders));
 

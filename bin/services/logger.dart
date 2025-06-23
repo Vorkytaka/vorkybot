@@ -27,11 +27,12 @@ class Logger {
     // Add parameters if provided
     if (parameters != null && parameters.isNotEmpty) {
       // Format the parameters using JsonEncoder for pretty printing
-      final encoder = const JsonEncoder.withIndent('  ');
+      final encoder = const JsonEncoder();
       final prettyParams = encoder.convert(parameters);
       
       // Format the output with parameters on new lines
-      buffer.write('\nPARAMS:\n$prettyParams');
+      buffer.write(' ');
+      buffer.write(prettyParams);
     }
     
     // Print the formatted log

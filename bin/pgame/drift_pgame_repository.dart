@@ -1,8 +1,9 @@
 import 'package:drift/drift.dart';
+
+import '../database/database.dart';
 import 'models/models.dart';
-import 'database/database.dart';
-import 'pgame.dart';
-import 'package:teledart/model.dart';
+import 'models/registration_result.dart';
+import 'pgame_repository.dart';
 
 class DriftPGameRepository implements PGameRepository {
   final PDatabase db;
@@ -10,11 +11,9 @@ class DriftPGameRepository implements PGameRepository {
   DriftPGameRepository(this.db);
 
   @override
-  Future<RegistrationResult> registerUser(User user, Chat chat) async {
+  Future<RegistrationResult> registerUser(UserEntity user, int chatId) async {
     try {
       return await db.transaction(() async {
-        // Ensure chat exists
-        final chatId = chat.id;
         final chatExists = await (db.select(db.pChats)
               ..where((tbl) => tbl.id.equals(chatId)))
             .getSingleOrNull();
@@ -27,15 +26,12 @@ class DriftPGameRepository implements PGameRepository {
               ..where((tbl) => tbl.id.equals(userId)))
             .getSingleOrNull();
         if (userExists == null) {
-          final name = user.lastName == null
-              ? user.firstName
-              : "${user.firstName} ${user.lastName}";
           await db.into(db.pUsers).insert(PUsersCompanion(
                 id: Value(userId),
                 username: user.username != null
                     ? Value(user.username)
                     : const Value.absent(),
-                name: Value(name),
+                name: Value(user.fullname),
               ));
         }
         // Check if already registered
