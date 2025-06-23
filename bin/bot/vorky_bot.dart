@@ -1,5 +1,7 @@
 import 'package:teledart/teledart.dart';
 import 'package:teledart/telegram.dart';
+import 'package:teledart/model.dart';
+import 'dart:async';
 
 import '../services/logger.dart';
 
@@ -25,6 +27,9 @@ class VorkyBot {
 
   /// Flag indicating if the bot has been started
   bool _isStarted = false;
+
+  /// Max age of messages to process in minutes
+  static const int _maxMessageAgeMinutes = 30;
 
   /// Creates a new [VorkyBot] instance with dependencies
   VorkyBot({
@@ -66,13 +71,22 @@ class VorkyBot {
       throw Exception('Bot has already been started');
     }
 
-    // Handle /future command
-    _teledart.onCommand('future').listen(_futureCommandHandler.handle);
-    // Handle /pgame_register and /pgame_play commands
-    _teledart.onCommand('register').listen(_pgameCommandHandler.handleRegister);
-    _teledart.onCommand('play').listen(_pgameCommandHandler.handlePlay);
-    // Handle /pgame_results command
-    _teledart.onCommand('results').listen(_pgameCommandHandler.handleResults);
+    _teledart
+        .onCommand('future')
+        .withAgeCheck()
+        .listen(_futureCommandHandler.handle);
+    _teledart
+        .onCommand('register')
+        .withAgeCheck()
+        .listen(_pgameCommandHandler.handleRegister);
+    _teledart
+        .onCommand('play')
+        .withAgeCheck()
+        .listen(_pgameCommandHandler.handlePlay);
+    _teledart
+        .onCommand('results')
+        .withAgeCheck()
+        .listen(_pgameCommandHandler.handleResults);
 
     // Start the bot
     _teledart.start();
@@ -88,4 +102,33 @@ class VorkyBot {
       Logger.instance.log('BotStopped', {'username': '@$_username'});
     }
   }
+}
+
+extension on Stream<TeleDartMessage> {
+  /// Adds a message age check to the stream
+  Stream<TeleDartMessage> withAgeCheck() {
+    return where(_isMessageRecentWithLogging);
+  }
+}
+
+bool _isMessageRecentWithLogging(TeleDartMessage message) {
+  final now = DateTime.now();
+  final messageTime = DateTime.fromMillisecondsSinceEpoch(message.date * 1000);
+  final difference = now.difference(messageTime);
+
+  final recent = difference.inMinutes < VorkyBot._maxMessageAgeMinutes;
+
+  if (!recent) {
+    Logger.instance.log('MessageIgnored', {
+      'reason': 'too_old',
+      'messageDate': messageTime.toIso8601String(),
+      'messageId': message.messageId.toString(),
+      'chatId': message.chat.id.toString(),
+      'userId': message.from?.id.toString() ?? 'unknown',
+      'username': message.from?.username ?? 'unknown',
+      'command': message.text ?? 'unknown',
+      'now': now.toIso8601String(),
+    });
+  }
+  return recent;
 }
