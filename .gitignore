@@ -6,6 +6,9 @@
 # API key file for local development
 api_key.txt
 
+# Predictions file with user data
+predictions.txt
+
 # Environment variables
 .env
 
