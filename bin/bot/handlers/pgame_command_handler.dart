@@ -151,4 +151,40 @@ class PGameCommandHandler {
       withQuote: true,
     );
   }
+
+  Future<void> handlePlayers(TeleDartMessage message) async {
+    if (message.chat.type != Chat.typeGroup &&
+        message.chat.type != Chat.typeSuperGroup) {
+      await message.reply(
+        PGameResponses.groupOnly(),
+        withQuote: true,
+      );
+      return;
+    }
+
+    final players = await _repository.getRegisteredUsers(message.chat.id);
+
+    if (players.isEmpty) {
+      await message.reply(
+        PGameResponses.noPlayersRegistered(),
+        withQuote: true,
+      );
+      return;
+    }
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < players.length; i++) {
+      final player = players[i];
+      final position = i + 1;
+      buffer.writeln('$position. ${player.displayName}');
+    }
+
+    final title = PGameResponses.playersListTitle(players.length);
+    final playersList = buffer.toString();
+
+    await message.reply(
+      '$title\n\n$playersList',
+      withQuote: true,
+    );
+  }
 }

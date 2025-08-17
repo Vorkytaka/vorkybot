@@ -87,6 +87,10 @@ class VorkyBot {
         .onCommand('results')
         .withAgeCheck()
         .listen(_pgameCommandHandler.handleResults);
+    _teledart
+        .onCommand('players')
+        .withAgeCheck()
+        .listen(_pgameCommandHandler.handlePlayers);
 
     // Start the bot
     _teledart.start();

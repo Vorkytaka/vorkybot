@@ -124,4 +124,26 @@ final class PGameResponses {
 
     return variants[_random.nextInt(variants.length)];
   }
+
+  static String playersListTitle(int count) {
+    final variants = [
+      'Список смельчаков в этом чате:',
+      'Участники игры в этом чате:',
+      'Зарегистрированные игроки:',
+      'Кто играет в этом чате:',
+    ];
+
+    return variants[_random.nextInt(variants.length)];
+  }
+
+  static String noPlayersRegistered() {
+    final variants = [
+      'В этом чате пока никто не зарегистрирован для игры.\nИспользуйте /register чтобы присоединиться!',
+      'Нет ни одного смельчака в этом чате!\nРегистрируйтесь с помощью /register, если не боитесь!',
+      'Список игроков пуст.\nИспользуйте команду /register для регистрации.',
+      'Здесь пока никого нет.\nНе будь пидором, регистрируйся первым с помощью /register!',
+    ];
+
+    return variants[_random.nextInt(variants.length)];
+  }
 }
